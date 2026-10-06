@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8f5">
+  <title>Thư viện An Nhiên</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #19352d;
+      --muted: #77877f;
+      --green: #168566;
+      --green-dark: #116d53;
+      --mint: #e9f5ee;
+      --line: #e8eee9;
+      --paper: #fff;
+      --canvas: #f5f8f5;
+      --amber: #af7724;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .layout { min-height: 100vh; display: grid; grid-template-columns: 246px minmax(0, 1fr); }
+    .sidebar { background: #fff; border-right: 1px solid var(--line); padding: 26px 17px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 29px; }
+    .brand-mark { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px; background: var(--green); color: white; font-size: 21px; }
+    .brand-name { font-weight: 750; letter-spacing: -.3px; font-size: 16px; }
+    .brand-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .nav-label { color: #a1ada6; font-size: 10px; font-weight: 750; letter-spacing: 1.2px; padding: 9px 12px; }
+    .nav { display: grid; gap: 5px; }
+    .nav button { border: 0; background: transparent; text-align: left; color: #687a71; border-radius: 9px; padding: 11px 12px; font-size: 13px; font-weight: 570; }
+    .nav button:hover { background: #f6f8f6; }
+    .nav button.active { background: var(--mint); color: var(--green-dark); font-weight: 700; }
+    .nav-icon { display: inline-block; width: 26px; font-size: 15px; }
+    .sidebar-note { margin-top: auto; padding: 14px; border-radius: 12px; background: #f4f8f4; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .sidebar-note strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 4px; }
+    main { min-width: 0; padding: 27px clamp(18px, 4vw, 50px) 48px; max-width: 1500px; width: 100%; margin: auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 28px; }
+    .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: 1.1px; font-size: 10px; font-weight: 750; margin-bottom: 6px; }
+    h1 { font-size: clamp(23px, 3vw, 30px); line-height: 1.2; letter-spacing: -1px; margin: 0; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .today { text-align: right; color: var(--muted); font-size: 11px; }
+    .avatar { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 50%; color: var(--green-dark); background: #d9eee3; font-size: 13px; font-weight: 750; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #42564c; padding: 8px 13px; font-size: 12px; font-weight: 680; }
+    .button:hover { border-color: #9fcdb5; color: var(--green-dark); }
+    .button.primary { border-color: var(--green); color: #fff; background: var(--green); }
+    .button.primary:hover { background: var(--green-dark); }
+    .button.danger { color: #a7443b; }
+    .button.small { min-height: 30px; padding: 5px 9px; font-size: 11px; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 17px 18px; }
+    .stat-head { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; font-weight: 620; }
+    .stat-icon { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 9px; background: var(--mint); color: var(--green); font-size: 14px; }
+    .stat-value { font-size: 27px; letter-spacing: -.8px; font-weight: 750; margin-top: 12px; }
+    .stat-foot { margin-top: 3px; font-size: 10px; color: var(--muted); }
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { font-size: 14px; margin: 0; letter-spacing: -.2px; }
+    .panel-sub { color: var(--muted); font-size: 10px; margin-top: 4px; }
+    .search { width: min(245px, 45vw); height: 36px; border: 1px solid var(--line); outline: none; border-radius: 8px; padding: 0 11px; font-size: 12px; background: #fff; }
+    .search:focus, input:focus, select:focus { border-color: #6bb799; box-shadow: 0 0 0 3px #16856614; outline: none; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { padding: 11px 18px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: .75px; color: #89978f; font-weight: 720; background: #fbfcfb; }
+    td { padding: 13px 18px; border-top: 1px solid #f0f3f0; font-size: 11px; color: #506158; }
+    td strong { color: var(--ink); font-size: 11px; }
+    .code { color: var(--green-dark); font-weight: 730; font-size: 10px; }
+    .badge { display: inline-flex; padding: 4px 8px; border-radius: 20px; background: #eaf4ed; color: #267451; font-size: 10px; font-weight: 680; }
+    .badge.warn { background: #fff2de; color: #a86d16; }
+    .badge.muted { background: #eff2ef; color: #6c7971; }
+    .actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .empty { text-align: center; padding: 35px; color: var(--muted); font-size: 12px; }
+    .notice { position: fixed; right: 22px; bottom: 22px; z-index: 5; background: #193e32; color: #fff; padding: 12px 17px; border-radius: 9px; box-shadow: 0 8px 30px #18352d2b; font-size: 12px; opacity: 0; transform: translateY(10px); transition: .2s; pointer-events: none; }
+    .notice.show { opacity: 1; transform: translateY(0); }
+    dialog { width: min(560px, calc(100% - 28px)); border: 0; border-radius: 14px; padding: 0; color: var(--ink); box-shadow: 0 25px 90px #152b2240; }
+    dialog::backdrop { background: #14251d70; backdrop-filter: blur(2px); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 21px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { font-size: 16px; margin: 0; }
+    .close { border: 0; background: transparent; color: var(--muted); font-size: 22px; }
+    .form-body { padding: 18px 21px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-height: min(66vh, 600px); overflow-y: auto; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 11px; color: #61736a; font-weight: 660; }
+    .field input, .field select { width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 7px; background: #fff; padding: 8px 10px; color: var(--ink); font-size: 12px; }
+    .form-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 21px 18px; border-top: 1px solid var(--line); }
+    .helper { color: var(--muted); font-size: 10px; }
+    .loading { padding: 30px; text-align: center; color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 205px minmax(0, 1fr); } .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) {
+      .layout { display: block; }
+      .sidebar { padding: 12px 12px 9px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand { padding: 0 5px 12px; }
+      .nav-label, .sidebar-note { display: none; }
+      .nav { display: flex; overflow-x: auto; gap: 5px; }
+      .nav button { flex: 0 0 auto; padding: 9px 10px; font-size: 11px; }
+      .nav-icon { width: 20px; }
+      main { padding: 21px 14px 35px; }
+      .today { display: none; }
+      .topbar { margin-bottom: 19px; }
+      .stats { gap: 9px; margin-bottom: 14px; }
+      .stat { padding: 13px; }
+      .stat-value { font-size: 23px; }
+      .panel-head { padding: 14px; }
+      td, th { padding-left: 13px; padding-right: 13px; }
+      .form-body { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">▤</div>
+        <div><div class="brand-name">An Nhiên</div><div class="brand-sub">QUẢN LÝ THƯ VIỆN</div></div>
+      </div>
+      <div class="nav-label">KHÔNG GIAN LÀM VIỆC</div>
+      <nav class="nav" id="navigation">
+        <button data-page="dashboard" class="active"><span class="nav-icon">⌂</span>Tổng quan</button>
+        <button data-page="books"><span class="nav-icon">▤</span>Kho sách</button>
+        <button data-page="readers"><span class="nav-icon">♙</span>Độc giả</button>
+        <button data-page="loans"><span class="nav-icon">↗</span>Mượn / trả</button>
+        <button data-page="receipts"><span class="nav-icon">＋</span>Nhập sách</button>
+        <button data-page="catalog"><span class="nav-icon">▦</span>Danh mục</button>
+      </nav>
+      <div class="sidebar-note"><strong>Thư viện An Nhiên</strong>Không gian tri thức dành cho mọi người.<br>Chúc bạn một ngày làm việc hiệu quả!</div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div><div class="eyebrow">THƯ VIỆN AN NHIÊN</div><h1 id="page-title">Tổng quan</h1></div>
+        <div class="top-actions"><div class="today" id="today"></div><div class="avatar" title="Thủ thư">TN</div></div>
+      </header>
+      <section id="content"><div class="loading">Đang tải dữ liệu thư viện...</div></section>
+    </main>
+  </div>
+  <dialog id="modal">
+    <form id="modal-form">
+      <div class="modal-head"><h2 id="modal-title"></h2><button type="button" class="close" aria-label="Đóng" onclick="closeModal()">×</button></div>
+      <div class="form-body" id="modal-body"></div>
+      <div class="form-footer"><button type="button" class="button" onclick="closeModal()">Hủy</button><button type="submit" class="button primary">Lưu thông tin</button></div>
+    </form>
+  </dialog>
+  <div class="notice" id="notice"></div>
+  <script>
+    const state = { page: "dashboard", query: "", books: [], categories: [], publishers: [], authors: [], readers: [], accounts: [] };
+    const titles = { dashboard: "Tổng quan", books: "Kho sách", readers: "Độc giả", loans: "Mượn / trả", receipts: "Nhập sách", catalog: "Danh mục" };
+    const content = document.querySelector("#content");
+    const modal = document.querySelector("#modal");
+    let noticeTimer;
+
+    document.querySelector("#today").textContent = new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date());
+    document.querySelector("#navigation").addEventListener("click", event => {
+      const button = event.target.closest("button[data-page]");
+      if (button) navigate(button.dataset.page);
+    });
+    document.querySelector("#modal-form").addEventListener("submit", saveModal);
+
+    async function api(path, options = {}) {
+      const response = await fetch(`/api${path}`, {
+        ...options,
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) }
+      });
+      if (!response.ok) {
+        const problem = await response.json().catch(() => ({}));
+        throw new Error(problem.error || `Không thể thực hiện yêu cầu (${response.status}).`);
+      }
+      return response.status === 204 ? null : response.json().catch(() => null);
+    }
+
+    async function navigate(page) {
+      state.page = page;
+      state.query = "";
+      document.querySelectorAll("#navigation button").forEach(button => button.classList.toggle("active", button.dataset.page === page));
+      document.querySelector("#page-title").textContent = titles[page];
+      content.innerHTML = '<div class="loading">Đang tải dữ liệu...</div>';
+      try {
+        await loadPage();
+      } catch (error) {
+        content.innerHTML = `<div class="panel empty">${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    async function loadPage() {
+      if (state.page === "dashboard") return renderDashboard();
+      if (state.page === "books") return renderBooks();
+      if (state.page === "readers") return renderReaders();
+      if (state.page === "loans") return renderLoans();
+      if (state.page === "receipts") return renderReceipts();
+      return renderCatalog();
+    }
+
+    async function referenceData() {
+      const [categories, publishers, authors, readers, accounts, books] = await Promise.all([
+        api("/categories"), api("/publishers"), api("/authors"), api("/readers"), api("/accounts"), api("/books")
+      ]);
+      Object.assign(state, { categories, publishers, authors, readers, accounts, books });
+    }
+
+    async function renderDashboard() {
+      const [stats, loans, books] = await Promise.all([api("/dashboard"), api("/loans"), api("/books")]);
+      const metrics = [
+        ["Đầu sách", stats.bookTitles, "đầu sách trong thư viện", "▤"],
+        ["Tổng bản sách", stats.bookCopies, "bản đang có trong kho", "▥"],
+        ["Độc giả", stats.readers, "bạn đọc đã đăng ký", "♙"],
+        ["Đang mượn", stats.activeLoans, stats.overdueLoans ? `${stats.overdueLoans} phiếu đã quá hạn` : "phiếu mượn đang lưu hành", "↗"]
+      ];
+      content.innerHTML = `
+        <div class="stats">${metrics.map((item, index) => `<article class="stat"><div class="stat-head">${item[0]}<span class="stat-icon">${item[3]}</span></div><div class="stat-value">${formatNumber(item[1])}</div><div class="stat-foot">${item[2]}</div></article>`).join("")}</div>
+        <section class="panel"><div class="panel-head"><div><h2>Sách mới trong thư viện</h2><div class="panel-sub">Tổng hợp các đầu sách hiện có trong kho</div></div><button class="button small" onclick="navigate('books')">Xem kho sách →</button></div>${bookTable(books.slice(0, 5), false)}</section>
+        <section class="panel" style="margin-top:16px"><div class="panel-head"><div><h2>Phiếu mượn gần đây</h2><div class="panel-sub">Theo dõi tình hình mượn và trả sách</div></div><button class="button small" onclick="navigate('loans')">Xem phiếu mượn →</button></div>${loanTable(loans.slice(0, 5), false)}</section>`;
+    }
+
+    async function renderBooks() {
+      await referenceData();
+      content.innerHTML = `<section class="panel"><div class="panel-head"><div><h2>Danh sách đầu sách</h2><div class="panel-sub">${state.books.length} đầu sách · ${formatNumber(state.books.reduce((sum, book) => sum + book.soLuong, 0))} bản sách</div></div><div class="top-actions"><input id="book-search" class="search" placeholder="Tìm tên sách, mã sách..." value="${escapeHtml(state.query)}"><button class="button primary" onclick="openBookForm()">＋ Thêm sách</button></div></div><div id="book-table">${bookTable(state.books, true)}</div></section>`;
+      const search = document.querySelector("#book-search");
+      search.addEventListener("input", debounce(async () => {
+        try { state.books = await api(`/books?q=${encodeURIComponent(search.value)}`); document.querySelector("#book-table").innerHTML = bookTable(state.books, true); }
+        catch (error) { showNotice(error.message); }
+      }, 180));
+    }
+
+    async function renderReaders() {
+      state.readers = await api("/readers");
+      content.innerHTML = `<section class="panel"><div class="panel-head"><div><h2>Hồ sơ độc giả</h2><div class="panel-sub">${state.readers.length} độc giả đang đăng ký</div></div><div class="top-actions"><input id="reader-search" class="search" placeholder="Tìm tên, mã, email..."><button class="button primary" onclick="openReaderForm()">＋ Thêm độc giả</button></div></div><div id="reader-table">${readerTable(state.readers)}</div></section>`;
+      const search = document.querySelector("#reader-search");
+      search.addEventListener("input", debounce(async () => {
+        try { state.readers = await api(`/readers?q=${encodeURIComponent(search.value)}`); document.querySelector("#reader-table").innerHTML = readerTable(state.readers); }
+        catch (error) { showNotice(error.message); }
+      }, 180));
+    }
+
+    async function renderLoans() {
+      const [loans] = await Promise.all([api("/loans"), referenceData()]);
+      content.innerHTML = `<section class="panel"><div class="panel-head"><div><h2>Phiếu mượn & trả sách</h2><div class="panel-sub">Tiền phạt quá hạn: 1.000đ / bản / ngày</div></div><button class="button primary" onclick="openLoanForm()">＋ Lập phiếu mượn</button></div>${loanTable(loans, true)}</section>`;
+    }
+
+    async function renderReceipts() {
+      const [receipts] = await Promise.all([api("/receipts"), referenceData()]);
+      content.innerHTML = `<section class="panel"><div class="panel-head"><div><h2>Phiếu nhập sách</h2><div class="panel-sub">Ghi nhận sách nhập và tự động cập nhật tồn kho</div></div><button class="button primary" onclick="openReceiptForm()">＋ Nhập sách</button></div>${receiptTable(receipts)}</section>`;
+    }
+
+    async function renderCatalog() {
+      await referenceData();
+      const sections = [
+        ["Thể loại", "categories", "maTL", "tenTL", "moTa"],
+        ["Nhà xuất bản", "publishers", "maNXB", "tenNXB", "diaChi"],
+        ["Tác giả", "authors", "maTG", "tenTG", "quocTich"]
+      ];
+      content.innerHTML = `<div class="stats">${sections.map(([name, key, idKey, nameKey, extraKey]) => `<section class="panel" style="grid-column:span 1"><div class="panel-head"><div><h2>${name}</h2><div class="panel-sub">${state[key].length} mục</div></div><button class="button small primary" onclick="openCatalogForm('${key}')">＋</button></div><div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tên</th></tr></thead><tbody>${state[key].map(row => `<tr><td class="code">${escapeHtml(row[idKey])}</td><td><strong>${escapeHtml(row[nameKey])}</strong><div class="panel-sub">${escapeHtml(row[extraKey] || "")}</div></td></tr>`).join("") || '<tr><td colspan="2" class="empty">Chưa có dữ liệu</td></tr>'}</tbody></table></div></section>`).join("")}</div>`;
+    }
+
+    function bookTable(rows, actions) {
+      return `<div class="table-wrap"><table><thead><tr><th>Mã sách</th><th>Tên sách</th><th>Tác giả</th><th>Thể loại</th><th>Nhà xuất bản</th><th>Năm XB</th><th>Còn trong kho</th>${actions ? "<th></th>" : ""}</tr></thead><tbody>${rows.map(book => `<tr><td class="code">${escapeHtml(book.maSach)}</td><td><strong>${escapeHtml(book.tenSach)}</strong></td><td>${escapeHtml(book.tacGia || "Chưa cập nhật")}</td><td>${escapeHtml(book.tenTheLoai)}</td><td>${escapeHtml(book.tenNXB)}</td><td>${book.namXuatBan || "—"}</td><td><span class="badge ${book.soLuong < 3 ? "warn" : ""}">${book.soLuong} bản</span></td>${actions ? `<td><div class="actions"><button class="button small" onclick="openBookForm('${escapeHtml(book.maSach)}')">Sửa</button><button class="button small danger" onclick="deleteBook('${escapeHtml(book.maSach)}')">Xóa</button></div></td>` : ""}</tr>`).join("") || `<tr><td colspan="${actions ? 8 : 7}" class="empty">Không tìm thấy đầu sách nào.</td></tr>`}</tbody></table></div>`;
+    }
+
+    function readerTable(rows) {
+      return `<div class="table-wrap"><table><thead><tr><th>Mã độc giả</th><th>Họ và tên</th><th>Ngày sinh</th><th>Số điện thoại</th><th>Email</th><th>Địa chỉ</th><th></th></tr></thead><tbody>${rows.map(reader => `<tr><td class="code">${escapeHtml(reader.maDG)}</td><td><strong>${escapeHtml(reader.hoTen)}</strong></td><td>${formatDate(reader.ngaySinh)}</td><td>${escapeHtml(reader.soDienThoai || "—")}</td><td>${escapeHtml(reader.email || "—")}</td><td>${escapeHtml(reader.diaChi || "—")}</td><td><div class="actions"><button class="button small" onclick="openReaderForm('${escapeHtml(reader.maDG)}')">Sửa</button><button class="button small danger" onclick="deleteReader('${escapeHtml(reader.maDG)}')">Xóa</button></div></td></tr>`).join("") || '<tr><td colspan="7" class="empty">Chưa có độc giả nào.</td></tr>'}</tbody></table></div>`;
+    }
+
+    function loanTable(rows, actions) {
+      return `<div class="table-wrap"><table><thead><tr><th>Mã phiếu</th><th>Độc giả</th><th>Ngày mượn</th><th>Hạn trả</th><th>Đầu sách</th><th>Tiền phạt</th><th>Trạng thái</th>${actions ? "<th></th>" : ""}</tr></thead><tbody>${rows.map(loan => {
+        const overdue = loan.trangThai === "Đang mượn" && new Date(`${loan.hanTra}T00:00:00`) < new Date(new Date().toDateString());
+        return `<tr><td class="code">${escapeHtml(loan.maPM)}</td><td><strong>${escapeHtml(loan.tenDocGia)}</strong><div class="panel-sub">${escapeHtml(loan.maDG)}</div></td><td>${formatDate(loan.ngayMuon)}</td><td>${formatDate(loan.hanTra)}</td><td>${loan.soDauSach}</td><td>${formatNumber(loan.tienPhat)}đ</td><td><span class="badge ${loan.trangThai === "Đã trả" ? "muted" : overdue ? "warn" : ""}">${overdue ? "Quá hạn" : escapeHtml(loan.trangThai)}</span></td>${actions ? `<td>${loan.trangThai === "Đang mượn" ? `<button class="button small" onclick="returnLoan('${escapeHtml(loan.maPM)}')">Nhận trả</button>` : "—"}</td>` : ""}</tr>`;
+      }).join("") || `<tr><td colspan="${actions ? 8 : 7}" class="empty">Chưa có phiếu mượn nào.</td></tr>`}</tbody></table></div>`;
+    }
+
+    function receiptTable(rows) {
+      return `<div class="table-wrap"><table><thead><tr><th>Mã phiếu nhập</th><th>Ngày nhập</th><th>Thủ thư</th><th>Số lượng</th><th>Tổng tiền</th><th>Ghi chú</th></tr></thead><tbody>${rows.map(row => `<tr><td class="code">${escapeHtml(row.maPN)}</td><td>${formatDate(row.ngayNhap)}</td><td><strong>${escapeHtml(row.tenThuThu)}</strong></td><td>${formatNumber(row.tongSoLuong)} bản</td><td>${formatNumber(row.tongTien)}đ</td><td>${escapeHtml(row.ghiChu || "—")}</td></tr>`).join("") || '<tr><td colspan="6" class="empty">Chưa có phiếu nhập nào.</td></tr>'}</tbody></table></div>`;
+    }
+
+    function openModal(title, fields, onSave) {
+      document.querySelector("#modal-title").textContent = title;
+      document.querySelector("#modal-body").innerHTML = fields;
+      modal.dataset.action = onSave;
+      modal.showModal();
+    }
+
+    function field(label, name, value = "", type = "text", extra = "") {
+      return `<div class="field"><label for="f-${name}">${label}</label><input id="f-${name}" name="${name}" type="${type}" value="${escapeHtml(value ?? "")}" ${extra}></div>`;
+    }
+
+    function selectField(label, name, rows, idKey, nameKey, selected = "", required = true) {
+      return `<div class="field ${required ? "" : ""}"><label for="f-${name}">${label}</label><select id="f-${name}" name="${name}" ${required ? "required" : ""}><option value="">Chọn ${label.toLowerCase()}</option>${rows.map(row => `<option value="${escapeHtml(row[idKey])}" ${row[idKey] === selected ? "selected" : ""}>${escapeHtml(row[nameKey])}</option>`).join("")}</select></div>`;
+    }
+
+    function openBookForm(id = "") {
+      const book = state.books.find(row => row.maSach === id);
+      const selectedAuthors = state.authors.filter(author => (book?.tacGia || "").split(", ").includes(author.tenTG)).map(author => author.maTG);
+      openModal(book ? "Cập nhật sách" : "Thêm đầu sách", `
+        ${field("Mã sách", "maSach", book?.maSach || nextId("S"), "text", book ? "readonly" : "required")}
+        ${field("Tên sách", "tenSach", book?.tenSach || "", "text", "required")}
+        ${selectField("Thể loại", "maTL", state.categories, "maTL", "tenTL", book?.maTL)}
+        ${selectField("Nhà xuất bản", "maNXB", state.publishers, "maNXB", "tenNXB", book?.maNXB)}
+        ${field("Năm xuất bản", "namXuatBan", book?.namXuatBan || new Date().getFullYear(), "number", 'min="0" max="2100"')}
+        ${field("Số lượng hiện có", "soLuong", book?.soLuong ?? 0, "number", 'min="0" required')}
+        <div class="field full"><label for="f-maTGs">Tác giả (có thể chọn nhiều)</label><select id="f-maTGs" name="maTGs" multiple size="3">${state.authors.map(author => `<option value="${escapeHtml(author.maTG)}" ${selectedAuthors.includes(author.maTG) ? "selected" : ""}>${escapeHtml(author.tenTG)}</option>`).join("")}</select></div>`,
+        book ? `updateBook:${id}` : "createBook");
+    }
+
+    function openReaderForm(id = "") {
+      const reader = state.readers.find(row => row.maDG === id);
+      openModal(reader ? "Cập nhật độc giả" : "Thêm độc giả", `
+        ${field("Mã độc giả", "maDG", reader?.maDG || nextId("DG"), "text", reader ? "readonly" : "required")}
+        ${field("Họ và tên", "hoTen", reader?.hoTen || "", "text", "required")}
+        ${field("Ngày sinh", "ngaySinh", reader?.ngaySinh || "", "date")}
+        ${field("Số điện thoại", "soDienThoai", reader?.soDienThoai || "", "tel", 'maxlength="15"')}
+        ${field("Email", "email", reader?.email || "", "email", 'maxlength="100"')}
+        ${field("Địa chỉ", "diaChi", reader?.diaChi || "")}`,
+        reader ? `updateReader:${id}` : "createReader");
+    }
+
+    async function openLoanForm() {
+      try {
+        await referenceData();
+        const available = state.books.filter(book => book.soLuong > 0);
+        if (!state.readers.length || !state.accounts.length || !available.length) {
+          showNotice("Cần có độc giả, thủ thư và sách còn trong kho để lập phiếu.");
+          return;
+        }
+        openModal("Lập phiếu mượn", `
+          ${field("Mã phiếu", "maPM", nextId("PM"), "text", "required")}
+          ${selectField("Độc giả", "maDG", state.readers, "maDG", "hoTen")}
+          ${selectField("Thủ thư", "maTK", state.accounts, "maTK", "hoTen")}
+          ${field("Hạn trả", "hanTra", dateAfter(14), "date", "required")}
+          ${selectField("Sách", "maSach", available, "maSach", "tenSach")}
+          ${field("Số lượng", "soLuong", 1, "number", 'min="1" required')}`,
+          "createLoan");
+      } catch (error) { showNotice(error.message); }
+    }
+
+    async function openReceiptForm() {
+      try {
+        await referenceData();
+        if (!state.books.length || !state.accounts.length) {
+          showNotice("Cần có sách và tài khoản thủ thư trước khi nhập kho.");
+          return;
+        }
+        openModal("Tạo phiếu nhập sách", `
+          ${field("Mã phiếu nhập", "maPN", nextId("PN"), "text", "required")}
+          ${selectField("Thủ thư", "maTK", state.accounts, "maTK", "hoTen")}
+          ${selectField("Sách nhập", "maSach", state.books, "maSach", "tenSach")}
+          ${field("Số lượng nhập", "soLuong", 1, "number", 'min="1" required')}
+          ${field("Đơn giá (VNĐ)", "donGia", 0, "number", 'min="0" required')}
+          <div class="field full"><label for="f-ghiChu">Ghi chú</label><input id="f-ghiChu" name="ghiChu" maxlength="255"></div>`,
+          "createReceipt");
+      } catch (error) { showNotice(error.message); }
+    }
+
+    function openCatalogForm(type) {
+      const options = {
+        categories: ["Thêm thể loại", "Thể loại", "maTL", "tenTL", "Mô tả", "moTa"],
+        publishers: ["Thêm nhà xuất bản", "Nhà xuất bản", "maNXB", "tenNXB", "Địa chỉ", "diaChi"],
+        authors: ["Thêm tác giả", "Tác giả", "maTG", "tenTG", "Quốc tịch", "quocTich"]
+      }[type];
+      openModal(options[0], `${field(`Mã ${options[1].toLowerCase()}`, options[2], nextId(type === "categories" ? "TL" : type === "publishers" ? "NXB" : "TG"), "text", "required")}${field(`Tên ${options[1].toLowerCase()}`, options[3], "", "text", "required")}${field(options[4], options[5])}`, `create:${type}`);
+    }
+
+    async function saveModal(event) {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const data = Object.fromEntries(form.entries());
+      const action = modal.dataset.action;
+      try {
+        if (action === "createBook" || action.startsWith("updateBook:")) {
+          data.namXuatBan = data.namXuatBan ? Number(data.namXuatBan) : null;
+          data.soLuong = Number(data.soLuong);
+          data.maTGs = [...document.querySelector("#f-maTGs").selectedOptions].map(option => option.value);
+          await api(action === "createBook" ? "/books" : `/books/${encodeURIComponent(action.split(":")[1])}`, { method: action === "createBook" ? "POST" : "PUT", body: JSON.stringify(data) });
+        } else if (action === "createReader" || action.startsWith("updateReader:")) {
+          if (!data.ngaySinh) data.ngaySinh = null;
+          await api(action === "createReader" ? "/readers" : `/readers/${encodeURIComponent(action.split(":")[1])}`, { method: action === "createReader" ? "POST" : "PUT", body: JSON.stringify(data) });
+        } else if (action === "createLoan") {
+          data.items = [{ maSach: data.maSach, soLuong: Number(data.soLuong) }];
+          delete data.maSach; delete data.soLuong;
+          await api("/loans", { method: "POST", body: JSON.stringify(data) });
+        } else if (action === "createReceipt") {
+          data.items = [{ maSach: data.maSach, soLuong: Number(data.soLuong), donGia: Number(data.donGia) }];
+          delete data.maSach; delete data.soLuong; delete data.donGia;
+          await api("/receipts", { method: "POST", body: JSON.stringify(data) });
+        } else if (action.startsWith("create:")) {
+          await api(`/${action.split(":")[1]}`, { method: "POST", body: JSON.stringify(data) });
+        }
+        closeModal();
+        showNotice("Đã lưu thông tin thành công.");
+        await loadPage();
+      } catch (error) { showNotice(error.message); }
+    }
+
+    async function deleteBook(id) {
+      if (!confirm(`Xóa sách "${id}" khỏi danh mục?`)) return;
+      try { await api(`/books/${encodeURIComponent(id)}`, { method: "DELETE" }); showNotice("Đã xóa sách."); await renderBooks(); }
+      catch (error) { showNotice(error.message); }
+    }
+    async function deleteReader(id) {
+      if (!confirm(`Xóa hồ sơ độc giả "${id}"?`)) return;
+      try { await api(`/readers/${encodeURIComponent(id)}`, { method: "DELETE" }); showNotice("Đã xóa độc giả."); await renderReaders(); }
+      catch (error) { showNotice(error.message); }
+    }
+    async function returnLoan(id) {
+      if (!confirm(`Xác nhận nhận trả tất cả sách trong phiếu ${id}?`)) return;
+      try {
+        const result = await api(`/loans/${encodeURIComponent(id)}/return`, { method: "POST" });
+        showNotice(result.tienPhat ? `Đã nhận trả. Tiền phạt: ${formatNumber(result.tienPhat)}đ.` : "Đã nhận trả sách thành công.");
+        await loadPage();
+      } catch (error) { showNotice(error.message); }
+    }
+    function closeModal() { modal.close(); }
+    function nextId(prefix) { return `${prefix}${String(Date.now()).slice(-6)}`; }
+    function dateAfter(days) { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); }
+    function formatDate(value) { return value ? new Intl.DateTimeFormat("vi-VN").format(new Date(`${String(value).slice(0, 10)}T00:00:00`)) : "—"; }
+    function formatNumber(value) { return new Intl.NumberFormat("vi-VN").format(Number(value || 0)); }
+    function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]); }
+    function debounce(callback, wait) { let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => callback(...args), wait); }; }
+    function showNotice(message) { const notice = document.querySelector("#notice"); notice.textContent = message; notice.classList.add("show"); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => notice.classList.remove("show"), 3000); }
+
+    navigate("dashboard");
+  </script>
+</body>
+</html>
